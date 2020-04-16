@@ -54,7 +54,10 @@ totalUp = 0
 # initialize the video writer (we'll instantiate later if need be)
 writer = None
 
-key = 'APQHC5LHPK5ZNW5L'
+#Set up IoT credentials
+
+#key = 'DQGNBBNS99STVOBX' #Entrance 1 Channel 
+key = 'APQHC5LHPK5ZNW5L'  #Entrance 2 Channel
 baseURL = 'https://api.thingspeak.com/update?api_key=%s' % key
 
 # loop over the frames from the video stream
@@ -188,10 +191,14 @@ while True:
                 elif direction > 0 and centroid[1] > H // 2:
                     totalDown += 1
                     to.counted = True
-                    
-m                if args["Iot"] is not None:
+                
+                #Upload to IoT channel 
+                if args["Iot"] is not None:
+                    totalCount = totalUp - totalDown
+                    if totalCount < 0
+                        totalCount = 0
                     try:  
-                        conn = urlopen(baseURL + '&field1=%s&field2=%s' % (totalUp, totalDown))
+                        conn = urlopen(baseURL + '&field1=%s&field2=%s&field3=%s' % (totalUp, totalDown, totalCount))
                         print(conn.read())
                         conn.close()
                         print("Uploading data")

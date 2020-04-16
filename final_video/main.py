@@ -19,6 +19,8 @@ ap.add_argument("-i", "--input", type=str,
     help="path to optional input video file")
 ap.add_argument("-o", "--output", type=str,
     help="path to optional output video file")
+ap.add_argument("-iot", "--Iot", type=bool,
+    help="connect to iot platform or not")
 args = vars(ap.parse_args())
 
 # if a video path was not supplied, grab a reference to the webcam
@@ -51,6 +53,9 @@ totalUp = 0
 
 # initialize the video writer (we'll instantiate later if need be)
 writer = None
+
+key = 'APQHC5LHPK5ZNW5L'
+baseURL = 'https://api.thingspeak.com/update?api_key=%s' % key
 
 # loop over the frames from the video stream
 while True:
@@ -184,12 +189,14 @@ while True:
                     totalDown += 1
                     to.counted = True
                     
-#                     try:  
-#                         conn = urlopen(baseURL + '&field1=%s&field2=%s' % (totalUp, totalDown))
-#                         print(conn.read())
-#                         conn.close()
-#                     except:
-#                         print("connection failed")
+m                if args["Iot"] is not None:
+                    try:  
+                        conn = urlopen(baseURL + '&field1=%s&field2=%s' % (totalUp, totalDown))
+                        print(conn.read())
+                        conn.close()
+                        print("Uploading data")
+                    except:
+                        print("connection failed")
 
 
         # store the trackable object in our nn  

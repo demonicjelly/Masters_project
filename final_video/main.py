@@ -1,3 +1,9 @@
+#To run: enter directory with this file in first 
+#        python main.py    to run from video stream with no output an not linking to iot platform
+#        python main.py --input videos/example_01.mp4   to run with a video file instead of the pi camera
+#        python main.py --output output/out_vid.avi
+#        python main.py --Iot     to run and send room count to the iot platform 
+#
 # import the necessary packages
 from pyimagesearch.centroidtracker import CentroidTracker
 from pyimagesearch.trackableobject import TrackableObject
@@ -50,6 +56,7 @@ trackableObjects = {}
 totalFrames = 0
 totalDown = 0
 totalUp = 0
+totalCount = 0 
 
 # initialize the video writer (we'll instantiate later if need be)
 writer = None
@@ -192,10 +199,11 @@ while True:
                     totalDown += 1
                     to.counted = True
                 
-                #Upload to IoT channel 
+                totalCount = totalUp - totalDown
+
+                #Upload to IoT channel if specified with parse
                 if args["Iot"] is not None:
-                    totalCount = totalUp - totalDown
-                    if totalCount < 0
+                    if totalCount < 0:
                         totalCount = 0
                     try:  
                         conn = urlopen(baseURL + '&field1=%s&field2=%s&field3=%s' % (totalUp, totalDown, totalCount))
@@ -224,6 +232,7 @@ while True:
     info = [
         ("Up", totalUp),
         ("Down", totalDown),
+        ("Count", totalCount),
     ]
 
     # loop over the info tuples and draw them on our frame

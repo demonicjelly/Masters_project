@@ -63,8 +63,8 @@ writer = None
 
 #Set up IoT credentials
 
-#key = 'DQGNBBNS99STVOBX' #Entrance 1 Channel 
-key = 'APQHC5LHPK5ZNW5L'  #Entrance 2 Channel
+key = 'DQGNBBNS99STVOBX' #Entrance 1 Channel 
+#key = 'APQHC5LHPK5ZNW5L'  #Entrance 2 Channel
 baseURL = 'https://api.thingspeak.com/update?api_key=%s' % key
 
 # loop over the frames from the video stream

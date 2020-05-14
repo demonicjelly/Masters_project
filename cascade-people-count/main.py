@@ -10,6 +10,8 @@ import time
 import cv2
 
 ap = argparse.ArgumentParser()
+ap.add_argument("-o", "--output", type=str,
+    help="path to optional output video file")
 args = vars(ap.parse_args())
 
 video_camera = VideoCamera(flip=False) # creates a camera object, flip vertically
@@ -35,6 +37,11 @@ totalUp = 0
 while True:
     
     frame, found_obj, rects = video_camera.get_object(object_classifier)
+    
+    if args["output"] is not None and writer is None:
+        fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+        writer = cv2.VideoWriter(args["output"], fourcc, 30,
+            (W, H), True)
 
     # resize the frame to have a maximum width of 500 pixels (the
     # less data we have, the faster we can process it), then convert
@@ -123,6 +130,8 @@ while True:
         cv2.putText(frame, text, (10, H - ((i * 20) + 20)),
             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     
+    if writer is not None:
+        writer.write(frame)
 
     # show the output frame
     cv2.imshow("Frame", frame)
@@ -131,6 +140,10 @@ while True:
     # if the `q` key was pressed, break from the loop
     if key == ord("q"):
         break
+    
+# check to see if we need to release the video writer pointer
+if writer is not None:
+    writer.release()
 
 # do a bit of cleanup
 cv2.destroyAllWindows()

@@ -9,6 +9,8 @@ import time
 import cv2
 
 ap = argparse.ArgumentParser()
+ap.add_argument("-o", "--output", type=str,
+    help="path to optional output video file")
 args = vars(ap.parse_args())
 
 video_camera = VideoCamera(flip=False) # creates a camera object, flip vertically
@@ -33,6 +35,11 @@ while True:
     # bounding box rectangles
     
     frame, found_obj, rects = video_camera.get_object(object_classifier)
+    
+    if args["output"] is not None and writer is None:
+        fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+        writer = cv2.VideoWriter(args["output"], fourcc, 30,
+            (W, H), True)
 
     #blob = cv2.dnn.blobFromImage(frame, 1.0, (W, H),
     #    (104.0, 177.0, 123.0))
@@ -53,6 +60,9 @@ while True:
             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         cv2.circle(frame, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
 
+    if writer is not None:
+        writer.write(frame)
+    
     # show the output frame
     cv2.imshow("Frame", frame)
     key = cv2.waitKey(1) & 0xFF
@@ -60,6 +70,10 @@ while True:
     # if the `q` key was pressed, break from the loop
     if key == ord("q"):
         break
+    
+# check to see if we need to release the video writer pointer
+if writer is not None:
+    writer.release()
 
 # do a bit of cleanup
 cv2.destroyAllWindows()

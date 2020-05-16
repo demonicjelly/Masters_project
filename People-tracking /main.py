@@ -1,3 +1,12 @@
+# Dominic Jolley
+# 10/05/2020
+# The University of Sheffield
+
+# Parts adpated from OpenCV People Counter 
+# Adrian Rosebrock
+# 13/08/2018
+# https://www.pyimagesearch.com/2018/08/13/opencv-people-counter/
+
 #To run: enter directory with this file in first 
 #        python main.py    to run from video stream with no output an not linking to iot platform
 #        python main.py --input videos/example_01.mp4   to run with a video file instead of the pi camera
@@ -9,7 +18,7 @@
 # import the necessary packages and libraries
 from pyimagesearch.centroidtracker import CentroidTracker
 from pyimagesearch.trackableobject import TrackableObject
-from camera_MOG import VideoCamera
+from camera import VideoCamera
 from urllib.request import urlopen
 import numpy as np
 import argparse

@@ -1,3 +1,13 @@
+# Orginal Version from OpenCV People Counter 
+# Adrian Rosebrock
+# 13/08/2018
+# https://www.pyimagesearch.com/2018/08/13/opencv-people-counter/
+
+# Revised Version
+# Dominic Jolley
+# 10/05/2020
+# The University of Sheffield
+
 # import the necessary packages
 from scipy.spatial import distance as dist
 from collections import OrderedDict

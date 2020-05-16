@@ -1,3 +1,13 @@
+# Original
+# Thomas Fortier under HackerShack
+# 15/10/2017
+# https://github.com/HackerShackOfficial/Smart-Security-Camera
+
+# Revised Version
+# Dominic Jolley
+# 10/05/2020
+# The University of Sheffield
+
 import cv2
 from imutils.video.pivideostream import PiVideoStream
 import imutils

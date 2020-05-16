@@ -27,6 +27,8 @@ class VideoCamera(object):
         frame = self.flip_if_needed(self.vs.read()).copy()
         frame = imutils.resize(frame, width=500)    
 
+        # apply the background subtractor to the frame, and remove shadows by setting
+        # them to 0 (black)
         fgmask = fgbg.apply(frame)
         fgmask[fgmask==127] = 0
         gray = fgmask

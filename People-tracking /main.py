@@ -23,17 +23,17 @@ import sys
 #from imutils.video import VideoStream
 #import threading
 
-
+#Construct argument parse and parse aguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--input", type=str,
+ap.add_argument("--input", type=str,
     help="path to optional input video file")
-ap.add_argument("-o", "--output", type=str,
+ap.add_argument("--output", type=str,
     help="path to optional output video file")
-ap.add_argument("-iot", "--Iot", type=bool,
+ap.add_argument("--Iot", type=bool,
     help="connect to iot platform or not")
 args = vars(ap.parse_args())
 
-# if a video path was not supplied, grab a reference to the webcam
+# if a video path was not supplied, get the webcam stream
 if not args.get("input", False):
     print("[INFO] starting video stream...")
     video_camera = VideoCamera(flip=False) # creates a camera object, flip vertically
@@ -45,24 +45,24 @@ else:
     vs = cv2.VideoCapture(args["input"])
     video = True
 
-
+#initialise the background subtractor and the number of frames it takes for an object
+# to dissapear 
 fgbg = cv2.createBackgroundSubtractorMOG2(history = 500, varThreshold = 25, detectShadows=True)
-avg = None
 maxDisappeared=15
+
 
 # initialize our centroid tracker and frame dimensions
 ct = CentroidTracker(maxDisappeared)
 trackableObjects = {}
 (H, W) = (None, None)
 
-# initialize the total number of frames processed thus far, along
-# with the total number of objects that have moved either up or down
-totalFrames = 0
+# initialize the total number of objects that have moved either up or down,
+# and the total count in the room
 totalDown = 0
 totalUp = 0
 totalCount = 0 
 
-# initialize the video writer (we'll instantiate later if need be)
+# initialize the video writer (instantiated later if needed)
 writer = None
 
 #Set up IoT credentials
@@ -71,69 +71,49 @@ key = 'DQGNBBNS99STVOBX' #Entrance 1 Channel
 #key = 'APQHC5LHPK5ZNW5L'  #Entrance 2 Channel
 baseURL = 'https://api.thingspeak.com/update?api_key=%s' % key
 
-# loop over the frames from the video stream
+# loop over the frames from the video or webcam stream
 while True:
-
+    # Get a timestamp for the current frame
     timestamp = datetime.datetime.now()
 
 
     #SET UP
     if video == True:
-        # grab the next frame and handle if we are reading from either
-        # VideoCapture or VideoStream
+        # grab the next frame and handle and resize frame
         frame = vs.read()
         frame = frame[1] if args.get("input", False) else frame
         frame = imutils.resize(frame, width=500)    
-
-        fgmask = fgbg.apply(frame)
-        gray = fgmask
-        gray[gray==127] = 0
-        # if we are viewing a video and we did not grab a frame then we
-        # have reached the end of the video          
+        # apply the background subtractor to the frame, and remove shadows by setting
+        # them to 0 (black)
+        gray = fgbg.apply(frame)
+        gray[gray==127] = 0    
     else:
         frame, gray = video_camera.get_processed(fgbg)
 
+    # if we are viewing a video and we did not find a frame then we
+    # have reached the end of the video
     if args["input"] is not None and frame is None:
             break 
-
 
     # if the frame dimensions are empty, set them
     if W is None or H is None:
         (H, W) = frame.shape[:2]
         
-    # if we are supposed to be writing a video to disk, initialize
-    # the writer
-    #if args["output"] is not None and writer is None:
-    #    fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-    #    writer = cv2.VideoWriter(args["output"], fourcc, 30,
-    #        (W, H), True)
+    #  initialise writer if needed
+    if args["output"] is not None and writer is None:
+        fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+        writer = cv2.VideoWriter(args["output"], fourcc, 30,
+            (W, H), True)
            
-    # draw a horizontal line in the center of the frame -- once an
-    # object crosses this line we will determine whether they were
-    # moving 'up' or 'down'
+    # draw a horizontal line in the center of the output frame 
     cv2.line(frame, (0, H // 2), (W, H // 2), (0, 255, 255), 2)
 
-
     #DETECT
-    
-    # if the average frame is None, initialize it
-    #if avg is None:
-    #    print("[INFO] starting background model...")
-    #    avg = gray.copy().astype("float")
-    #    #rawCapture.truncate(0)
-    #    continue
-
-    # accumulate the weighted average between the current frame and
-    # previous frames, then compute the difference between the current
-    # frame and running average
-    #cv2.accumulateWeighted(gray, avg, 0.5)
-    #frameDelta = cv2.absdiff(gray, cv2.convertScaleAbs(avg))
-    
-    # threshold the delta image, dilate the thresholded image to fill
-    # in holes, then find contours on thresholded image
+   
+    # threshold the background subtracted image, dilate the thresholded image to fill
+    # in holes (with a 3x3 rectangle kernel), then find contours on thresholded image
     thresh = cv2.threshold(gray, 50, 255, cv2.THRESH_BINARY)[1]   
     thresh = cv2.dilate(thresh, cv2.getStructuringElement(cv2.MORPH_RECT,(3,3)), iterations=2)
-    
     cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
         cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
@@ -146,21 +126,23 @@ while True:
         if cv2.contourArea(c) < 5000:
             continue
 
-        # compute the bounding box for the contour
+        # compute the bounding box for the contour and append it to
+        # a list of rectangles
         (x, y, w, h) = cv2.boundingRect(c)
         box = [x, y, x + w, y + h]
         rects.append(box)
         
+        #Draw bounding box rectangle on output frame
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
 
     #TRACKING
 
-    # use the centroid tracker to associate the (1) old object
-    # centroids with (2) the newly computed object centroids
+    # use the centroid tracker to associate the old object
+    # centroids with the newly computed object centroids
     objects, disappeared = ct.update(rects)
     
-        # loop over the tracked objects
+    # loop over the tracked objects
     for (objectID, centroid) in objects.items():
         # check to see if a trackable object exists for the current
         # object ID
@@ -175,19 +157,22 @@ while True:
         # to determine direction
         else:
             # the difference between the y-coordinate of the *current*
-            # centroid and the mean of *previous* centroids will tell
-            # us in which direction the object is moving (negative for
+            # centroid and the mean of previous centroids can be used 
+            # to find which direction the object is moving in(negative for
             # 'up' and positive for 'down')
+            # additionally add dissapeared count to the trackable object
             y = [c[1] for c in to.centroids]
             direction = centroid[1] - np.mean(y)
             to.centroids.append(centroid)
             to.disappeared = disappeared.get(objectID)
             
-
-            if H//2 - 10 < centroid[1] < H//2 + 10:
+            # if the centroid is recorded 'near' to the centre of the
+            # screen (within 20 pixels) then record that it has passed the middle
+            if H//2 - 20 < centroid[1] < H//2 + 20:
                 to.passedMid = True
 
-            # check to see if the object has been counted or not
+            # Counting objects takes place only if the object has not already been counted,
+            # is has passed the centre of the screen and it is about to dissapear
             if not to.counted and to.passedMid == True and to.disappeared > maxDisappeared-1:
                 # if the direction is negative (indicating the object
                 # is moving up) AND the centroid is above the center
@@ -205,10 +190,13 @@ while True:
                     totalCount -= 1
                     to.counted = True
                 
-                if totalCount < 0:
-                        totalCount = 0
+                # Optional if to reset the total count to 0, only to be applied
+                # if there is one entrance to the room and a person is already inside
+                # if there are multiple entrances a negative room count is fine
+                #if totalCount < 0
+                    #totalCount = 0
 
-                #Upload to IoT channel if specified with parse
+                #Upload to IoT channel if required 
                 if args["Iot"] is not None:
                     try:  
                         conn = urlopen(baseURL + '&field1=%s&field2=%s&field3=%s' % (totalUp, totalDown, totalCount))
@@ -219,7 +207,7 @@ while True:
                         print("connection failed")
 
 
-        # store the trackable object in our nn  
+        # store the trackable object in the dictionary  
         trackableObjects[objectID] = to
 
         # draw both the ID of the object and the centroid of the
@@ -232,7 +220,7 @@ while True:
 
     #MAKE VIDEO LOOK NICE
 
-    # construct a tuple of information we will be displaying on the
+    # construct a tuple of information to display on the
     # frame
     info = [
         ("Up", totalUp),
@@ -254,7 +242,7 @@ while True:
     if writer is not None:
         writer.write(frame)
 
-    # show the output frame
+    # show the output frames
     cv2.imshow("Frame", frame)
     cv2.imshow("gray", gray)
     #cv2.imshow("average", avg)
@@ -263,7 +251,7 @@ while True:
 
     key = cv2.waitKey(1) & 0xFF
 
-    # if the `q` key was pressed, break from the loop
+    # if the `q` key was pressed in a cv frame, break from the loop
     if key == ord("q"):
         break
 

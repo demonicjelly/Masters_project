@@ -143,11 +143,7 @@ while True:
     # loop over the contours
     for c in cnts:
         # if the contour is too small, ignore it
-<<<<<<< HEAD
         if cv2.contourArea(c) < 5000:
-=======
-        if cv2.contourArea(c) < 5500:
->>>>>>> 44e4ff34a8d1db56e2c6c87e5fcadb71d5ffcc20
             continue
 
         # compute the bounding box for the contour
@@ -208,15 +204,9 @@ while True:
                     totalDown += 1
                     totalCount -= 1
                     to.counted = True
-<<<<<<< HEAD
                 
                 if totalCount < 0:
                         totalCount = 0
-=======
-    
-                if totalCount < 0:
-                    totalCount = 0
->>>>>>> 44e4ff34a8d1db56e2c6c87e5fcadb71d5ffcc20
 
                 #Upload to IoT channel if specified with parse
                 if args["Iot"] is not None:

@@ -29,9 +29,6 @@ import http.client
 import datetime
 import sys
 
-#from imutils.video import VideoStream
-#import threading
-
 #Construct argument parse and parse aguments
 ap = argparse.ArgumentParser()
 ap.add_argument("--input", type=str,

@@ -139,7 +139,7 @@ while True:
     # loop over the contours
     for c in cnts:
         # if the contour is too small, ignore it
-        if cv2.contourArea(c) < 3500:
+        if cv2.contourArea(c) < 5500:
             continue
 
         # compute the bounding box for the contour
@@ -190,6 +190,7 @@ while True:
                 # line, count the object
                 if direction < 0 and centroid[1] < H // 2:
                     totalUp += 1
+                    totalCount += 1
                     to.counted = True
 
                 # if the direction is positive (indicating the object
@@ -197,14 +198,14 @@ while True:
                 # center line, count the object
                 elif direction > 0 and centroid[1] > H // 2:
                     totalDown += 1
+                    totalCount -= 1
                     to.counted = True
-                
-                totalCount = totalUp - totalDown
+    
+                if totalCount < 0:
+                    totalCount = 0
 
                 #Upload to IoT channel if specified with parse
                 if args["Iot"] is not None:
-                    if totalCount < 0:
-                        totalCount = 0
                     try:  
                         conn = urlopen(baseURL + '&field1=%s&field2=%s&field3=%s' % (totalUp, totalDown, totalCount))
                         print(conn.read())

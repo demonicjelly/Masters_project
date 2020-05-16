@@ -16,8 +16,8 @@
 #        python main.py --output output/out_vid.avi --Iot True
 #
 # import the necessary packages and libraries
-from pyimagesearch.centroidtracker import CentroidTracker
-from pyimagesearch.trackableobject import TrackableObject
+from centroidtracker import CentroidTracker
+from trackableobject import TrackableObject
 from camera import VideoCamera
 from urllib.request import urlopen
 import numpy as np

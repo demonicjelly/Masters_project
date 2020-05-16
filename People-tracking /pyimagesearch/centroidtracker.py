@@ -66,7 +66,7 @@ class CentroidTracker():
             for i in range(0, len(inputCentroids)):
                 self.register(inputCentroids[i])
 
-        # otherwise, are are currently tracking objects so we need to
+        # otherwise, we are currently tracking objects so we need to
         # try to match the input centroids to existing object
         # centroids
         else:
@@ -79,7 +79,6 @@ class CentroidTracker():
             # goal will be to match an input centroid to an existing
             # object centroid
             D = dist.cdist(np.array(objectCentroids), inputCentroids)
-
             # in order to perform this matching we must (1) find the
             # smallest value in each row and then (2) sort the row
             # indexes based on their minimum values so that the row
@@ -110,6 +109,7 @@ class CentroidTracker():
                 # otherwise, grab the object ID for the current row,
                 # set its new centroid, and reset the disappeared
                 # counter
+                
                 objectID = objectIDs[row]
                 self.objects[objectID] = inputCentroids[col]
                 self.disappeared[objectID] = 0

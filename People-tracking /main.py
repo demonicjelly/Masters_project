@@ -124,7 +124,7 @@ while True:
    
     # threshold the background subtracted image, dilate the thresholded image to fill
     # in holes (with a 3x3 rectangle kernel), then find contours on thresholded image
-    dilated = cv2.dilate(gray, cv2.getStructuringElement(cv2.MORPH_RECT,(3,3)), iterations=2)
+    dilated = cv2.dilate(gray, cv2.getStructuringElement(cv2.MORPH_RECT,(3,3)), iterations=1)
     cnts = cv2.findContours(dilated.copy(), cv2.RETR_EXTERNAL,
         cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)

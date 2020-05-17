@@ -255,8 +255,8 @@ while True:
 
     # show the output frames
     cv2.imshow("Frame", frame)
-    cv2.imshow("fgmask", fgmask)
-    cv2.imshow("gray", gray)
+    #cv2.imshow("fgmask", fgmask)
+    #cv2.imshow("gray", gray)
     cv2.imshow("dilated", dilated)
 
     key = cv2.waitKey(1) & 0xFF

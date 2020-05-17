@@ -99,7 +99,6 @@ while True:
         
     else:
         frame, fgmask, gray = video_camera.get_processed(fgbg)
-        orig = frame
 
     # if we are viewing a video and we did not find a frame then we
     # have reached the end of the video
@@ -118,13 +117,14 @@ while True:
            
     # draw a horizontal line in the center of the output frame 
     cv2.line(frame, (0, H // 2), (W, H // 2), (0, 255, 255), 2)
-    flcopy = frame
-
-    #DETECT
    
-    # threshold the background subtracted image, dilate the thresholded image to fill
-    # in holes (with a 3x3 rectangle kernel), then find contours on thresholded image
+    # Dilate the background subtracted image to fill in holes
+    # (with a 3x3 rectangle kernel)
     dilated = cv2.dilate(gray, cv2.getStructuringElement(cv2.MORPH_RECT,(3,3)), iterations=2)
+    
+    #DETECT
+    
+    #find contours of the dilated image 
     cnts = cv2.findContours(dilated.copy(), cv2.RETR_EXTERNAL,
         cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)

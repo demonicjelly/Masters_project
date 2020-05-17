@@ -40,7 +40,7 @@ class VideoCamera(object):
         # apply the background subtractor to the frame, and remove shadows by setting
         # them to 0 (black)
         fgmask = fgbg.apply(frame)
-        fgmask[fgmask==127] = 0
-        gray = fgmask
+        gray = fgmask 
+        gray[gray==127] = 0
         
-        return (frame, gray)
+        return (frame,fgmask, gray)

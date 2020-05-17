@@ -93,10 +93,13 @@ while True:
         frame = imutils.resize(frame, width=500)    
         # apply the background subtractor to the frame, and remove shadows by setting
         # them to 0 (black)
-        gray = fgbg.apply(frame)
-        gray[gray==127] = 0    
+        fgmask = fgbg.apply(frame)
+        gray = fgmask 
+        gray[gray==127] = 0
+        
     else:
-        frame, gray = video_camera.get_processed(fgbg)
+        frame, fgmask, gray = video_camera.get_processed(fgbg)
+        orig = frame
 
     # if we are viewing a video and we did not find a frame then we
     # have reached the end of the video
@@ -115,6 +118,7 @@ while True:
            
     # draw a horizontal line in the center of the output frame 
     cv2.line(frame, (0, H // 2), (W, H // 2), (0, 255, 255), 2)
+    flcopy = frame
 
     #DETECT
    
@@ -251,6 +255,7 @@ while True:
 
     # show the output frames
     cv2.imshow("Frame", frame)
+    cv2.imshow("fgmask", fgmask)
     cv2.imshow("gray", gray)
     cv2.imshow("dilated", dilated)
 
@@ -263,6 +268,7 @@ while True:
 # Used to take test images of the different stages of the frame on 'p'
     if key == ord("p"):
         cv2.imwrite("images/frame%d.jpg" % framecount, frame)
+        cv2.imwrite("images/fgmask%d.jpg" % framecount, fgmask)
         cv2.imwrite("images/gray%d.jpg" % framecount, gray)
         cv2.imwrite("images/dilated%d.jpg" % framecount, dilated)
         framecount += 1
